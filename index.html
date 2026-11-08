@@ -9,41 +9,41 @@
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 sm:p-6">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-4 sm:p-6">
 
     <div class="max-w-4xl mx-auto space-y-6">
     
         <!-- Header -->
-        <header class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <header class="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900">Gestione Pneumatici</h1>
-                <p class="text-sm text-slate-500">Traccia km, inversioni, cambi stagionali e stato dei set (Online su Supabase).</p>
+                <h1 class="text-2xl font-bold text-slate-100">Gestione Pneumatici</h1>
+                <p class="text-sm text-slate-400">Traccia km, inversioni, cambi stagionali e stato dei set (Online su Supabase).</p>
             </div>
             <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                 <button onclick="esportaBackup()" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3.5 py-2 rounded-xl transition shadow-sm">
                     Esporta Backup JSON
                 </button>
-                <label class="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-3.5 py-2 rounded-xl transition shadow-sm cursor-pointer text-center">
+                <label class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium px-3.5 py-2 rounded-xl transition shadow-sm cursor-pointer text-center border border-slate-700">
                     Importa Backup
                     <input type="file" id="file-backup" accept=".json" onchange="importaBackup(event)" class="hidden">
                 </label>
-                <button onclick="esportaCSV()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-3.5 py-2 rounded-xl transition shadow-sm">
+                <button onclick="esportaCSV()" class="flex-1 sm:flex-none bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium px-3.5 py-2 rounded-xl transition shadow-sm">
                     Esporta CSV (Storico)
                 </button>
             </div>
         </header>
 
         <!-- Sezione 1: Aggiungi Manualmente Nuovo Set -->
-        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-semibold text-slate-900 mb-4">1. Aggiungi Nuovo Set di Pneumatici</h2>
+        <section class="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-800">
+            <h2 class="text-lg font-semibold text-slate-100 mb-4">1. Aggiungi Nuovo Set di Pneumatici</h2>
             <form id="form-set" onsubmit="aggiungiSetManuale(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Nome Set (es. Estivi 2026)</label>
-                    <input type="text" id="set-nome" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nome Set (es. Estivi 2026)</label>
+                    <input type="text" id="set-nome" required class="w-full rounded-xl border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Km Iniziali auto (Installazione)</label>
-                    <input type="number" id="set-km-inz" required min="0" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Km Iniziali auto (Installazione)</label>
+                    <input type="number" id="set-km-inz" required min="0" class="w-full rounded-xl border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div class="flex items-end">
                     <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-xl transition shadow-sm">
@@ -54,12 +54,12 @@
         </section>
 
         <!-- Sezione 2: Registra Evento -->
-        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-semibold text-slate-900 mb-4">2. Registra Evento</h2>
+        <section class="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-800">
+            <h2 class="text-lg font-semibold text-slate-100 mb-4">2. Registra Evento</h2>
             <form id="form-evento" onsubmit="registraEvento(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Tipo Evento</label>
-                    <select id="ev-tipo" onchange="gestisciCambioTipoEvento()" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Tipo Evento</label>
+                    <select id="ev-tipo" onchange="gestisciCambioTipoEvento()" class="w-full rounded-xl border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="Aggiornamento Km">Aggiornamento Km</option>
                         <option value="Inversione">Inversione Pneumatici</option>
                         <option value="Cambio Stagionale">Cambio Set Stagionale</option>
@@ -68,25 +68,25 @@
                 </div>
                 
                 <div id="container-set-esistente">
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Seleziona Set</label>
-                    <select id="ev-set" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></select>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Seleziona Set</label>
+                    <select id="ev-set" class="w-full rounded-xl border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
                 </div>
 
                 <div id="container-nuovo-set" class="hidden">
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Nome Nuovo Set</label>
-                    <input type="text" id="ev-nuovo-set-nome" placeholder="es. Invernali Nuovi" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nome Nuovo Set</label>
+                    <input type="text" id="ev-nuovo-set-nome" placeholder="es. Invernali Nuovi" class="w-full rounded-xl border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Data</label>
-                    <input type="date" id="ev-data" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Data</label>
+                    <input type="date" id="ev-data" required class="w-full rounded-xl border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Km Totali Auto (Cruscotto)</label>
-                    <input type="number" id="ev-km" required min="0" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Km Totali Auto (Cruscotto)</label>
+                    <input type="number" id="ev-km" required min="0" class="w-full rounded-xl border border-slate-700 bg-slate-800 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-2 px-4 rounded-xl transition shadow-sm">
+                    <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-sm font-medium py-2 px-4 rounded-xl transition shadow-sm">
                         Registra
                     </button>
                 </div>
@@ -95,17 +95,17 @@
 
         <!-- Sezione 3: Elenco Set -->
         <section class="space-y-4">
-            <h2 class="text-lg font-semibold text-slate-900">3. I tuoi Set di Pneumatici</h2>
+            <h2 class="text-lg font-semibold text-slate-100">3. I tuoi Set di Pneumatici</h2>
             <div id="lista-set" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
         <!-- Sezione 4: Cronologia Eventi Completa -->
-        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-semibold text-slate-900 mb-4">4. Storico Eventi (Ordinati dal meno recente)</h2>
+        <section class="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-800">
+            <h2 class="text-lg font-semibold text-slate-100 mb-4">4. Storico Eventi (Ordinati dal meno recente)</h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead>
-                        <tr class="border-b border-slate-200 text-slate-500 font-medium">
+                        <tr class="border-b border-slate-800 text-slate-400 font-medium">
                             <th class="pb-3 px-2">Data</th>
                             <th class="pb-3 px-2">Set Pneumatici</th>
                             <th class="pb-3 px-2">Tipo Evento</th>
@@ -113,7 +113,7 @@
                             <th class="pb-3 px-2 text-right">Azioni</th>
                         </tr>
                     </thead>
-                    <tbody id="tabella-eventi" class="divide-y divide-slate-100"></tbody>
+                    <tbody id="tabella-eventi" class="divide-y divide-slate-800/60"></tbody>
                 </table>
             </div>
         </section>
@@ -217,10 +217,10 @@
             const diff = inputVal - ultimoKmRegistrato;
             if (diff >= 0) {
                 resElem.textContent = `+${diff} km rispetto all'ultimo evento`;
-                resElem.className = "text-xs font-medium text-emerald-600 mt-1";
+                resElem.className = "text-xs font-medium text-emerald-400 mt-1";
             } else {
                 resElem.textContent = `${diff} km (valore inferiore all'ultimo evento)`;
-                resElem.className = "text-xs font-medium text-amber-600 mt-1";
+                resElem.className = "text-xs font-medium text-amber-400 mt-1";
             }
         }
 
@@ -411,7 +411,7 @@
             containerSet.innerHTML = '';
             
             if (datiApp.sets.length === 0) {
-                containerSet.innerHTML = '<p class="text-sm text-slate-500 col-span-2">Nessun set di pneumatici inserito.</p>';
+                containerSet.innerHTML = '<p class="text-sm text-slate-400 col-span-2">Nessun set di pneumatici inserito.</p>';
             } else {
                 datiApp.sets.forEach(s => {
                     const kmTotaliSet = kmTotaliPerSet[s.id] || 0;
@@ -426,16 +426,16 @@
                         mediaRotazioniStr = `${media} km (su ${numRotazioni} eventi)`;
                     }
 
-                    let badgeClass = 'bg-slate-100 text-slate-800';
-                    let cardBorder = 'border-slate-200 bg-white';
+                    let badgeClass = 'bg-slate-800 text-slate-300 border border-slate-700';
+                    let cardBorder = 'border-slate-800 bg-slate-900';
                     if (s.stato === 'Attivo') {
-                        badgeClass = 'bg-emerald-100 text-emerald-800 font-semibold';
-                        cardBorder = 'border-emerald-300 bg-emerald-50/20 shadow-sm';
+                        badgeClass = 'bg-emerald-950 text-emerald-300 border border-emerald-800 font-semibold';
+                        cardBorder = 'border-emerald-700/60 bg-slate-900 shadow-md shadow-emerald-950/30';
                     } else if (s.stato === 'A deposito') {
-                        badgeClass = 'bg-blue-100 text-blue-800';
+                        badgeClass = 'bg-blue-950 text-blue-300 border border-blue-800';
                     } else if (s.stato === 'Esauriti') {
-                        badgeClass = 'bg-amber-100 text-amber-800';
-                        cardBorder = 'border-slate-300 bg-slate-100 opacity-75';
+                        badgeClass = 'bg-amber-950 text-amber-300 border border-amber-800';
+                        cardBorder = 'border-slate-800 bg-slate-900/50 opacity-75';
                     }
 
                     const inputId = `diff_input_${s.id}`;
@@ -446,32 +446,32 @@
                     div.innerHTML = `
                         <div>
                             <div class="flex justify-between items-start gap-2">
-                                <h3 class="font-bold text-slate-900 text-base">${s.nome}</h3>
+                                <h3 class="font-bold text-slate-100 text-base">${s.nome}</h3>
                                 <span class="text-xs px-2.5 py-1 rounded-full ${badgeClass}">${s.stato}</span>
                             </div>
-                            <div class="mt-4 space-y-1.5 text-sm text-slate-600">
-                                <p><span class="font-medium text-slate-700">Km totali percorsi:</span> <span class="font-bold text-slate-900">${kmTotaliSet} km</span></p>
-                                <p><span class="font-medium text-slate-700">Km cruscotto al montaggio:</span> <span class="font-semibold text-slate-900">${kmUltimoMontaggio} km</span></p>
-                                <p><span class="font-medium text-slate-700">Media km tra inversioni/cambio stagionale:</span> <span class="font-semibold text-slate-900">${mediaRotazioniStr}</span></p>
+                            <div class="mt-4 space-y-1.5 text-sm text-slate-300">
+                                <p><span class="font-medium text-slate-400">Km totali percorsi:</span> <span class="font-bold text-slate-100">${kmTotaliSet} km</span></p>
+                                <p><span class="font-medium text-slate-400">Km cruscotto al montaggio:</span> <span class="font-semibold text-slate-100">${kmUltimoMontaggio} km</span></p>
+                                <p><span class="font-medium text-slate-400">Media km tra inversioni/cambio stagionale:</span> <span class="font-semibold text-slate-100">${mediaRotazioniStr}</span></p>
                             </div>
 
-                            <div class="mt-4 pt-3 border-t border-slate-100 bg-slate-50/70 p-3 rounded-xl">
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Calcola differenza da km attuali:</label>
+                            <div class="mt-4 pt-3 border-t border-slate-800 bg-slate-950/40 p-3 rounded-xl">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Calcola differenza da km attuali:</label>
                                 <div class="flex gap-2">
-                                    <input type="number" id="${inputId}" placeholder="es. km attuali" oninput="calcolaDifferenzaKm('${s.id}', ${ultimoKmRegistrato}, '${inputId}', '${resId}')" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                    <input type="number" id="${inputId}" placeholder="es. km attuali" oninput="calcolaDifferenzaKm('${s.id}', ${ultimoKmRegistrato}, '${inputId}', '${resId}')" class="w-full rounded-lg border border-slate-700 bg-slate-900 text-slate-100 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 </div>
                                 <div id="${resId}"></div>
                             </div>
                         </div>
 
-                        <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap justify-between items-center gap-2">
+                        <div class="mt-6 pt-4 border-t border-slate-800 flex flex-wrap justify-between items-center gap-2">
                             <div class="flex flex-wrap gap-2 text-xs">
-                                <button onclick="modificaNomeSet('${s.id}')" class="text-indigo-600 hover:text-indigo-800 font-medium">Modifica Nome</button>
-                                ${s.stato !== 'Attivo' ? `<button onclick="cambiaStatoSet('${s.id}', 'Attivo')" class="text-emerald-600 hover:text-emerald-800 font-medium">Monta</button>` : ''}
-                                ${s.stato !== 'A deposito' && s.stato !== 'Esauriti' ? `<button onclick="cambiaStatoSet('${s.id}', 'A deposito')" class="text-blue-600 hover:text-blue-800 font-medium">Deposito</button>` : ''}
-                                ${s.stato !== 'Esauriti' ? `<button onclick="cambiaStatoSet('${s.id}', 'Esauriti')" class="text-amber-600 hover:text-amber-800 font-medium">Esauriti</button>` : `<button onclick="cambiaStatoSet('${s.id}', 'A deposito')" class="text-indigo-600 hover:text-indigo-800 font-medium">Riattiva</button>`}
+                                <button onclick="modificaNomeSet('${s.id}')" class="text-indigo-400 hover:text-indigo-300 font-medium">Modifica Nome</button>
+                                ${s.stato !== 'Attivo' ? `<button onclick="cambiaStatoSet('${s.id}', 'Attivo')" class="text-emerald-400 hover:text-emerald-300 font-medium">Monta</button>` : ''}
+                                ${s.stato !== 'A deposito' && s.stato !== 'Esauriti' ? `<button onclick="cambiaStatoSet('${s.id}', 'A deposito')" class="text-blue-400 hover:text-blue-300 font-medium">Deposito</button>` : ''}
+                                ${s.stato !== 'Esauriti' ? `<button onclick="cambiaStatoSet('${s.id}', 'Esauriti')" class="text-amber-400 hover:text-amber-300 font-medium">Esauriti</button>` : `<button onclick="cambiaStatoSet('${s.id}', 'A deposito')" class="text-indigo-400 hover:text-indigo-300 font-medium">Riattiva</button>`}
                             </div>
-                            <button onclick="eliminaSet('${s.id}')" class="text-xs text-red-500 hover:text-red-700 font-medium">Elimina</button>
+                            <button onclick="eliminaSet('${s.id}')" class="text-xs text-red-400 hover:text-red-300 font-medium">Elimina</button>
                         </div>
                     `;
                     containerSet.appendChild(div);
@@ -484,26 +484,26 @@
             const eventiOrdinati = [...datiApp.eventi].sort((a, b) => new Date(a.data) - new Date(b.data) || a.kmAuto - b.kmAuto);
 
             if (eventiOrdinati.length === 0) {
-                tabella.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">Nessun evento registrato.</td></tr>';
+                tabella.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-500">Nessun evento registrato.</td></tr>';
             } else {
                 eventiOrdinati.forEach(ev => {
                     const setObj = datiApp.sets.find(s => s.id === ev.setId);
                     const nomeSet = setObj ? setObj.nome : 'Set rimosso';
                     
-                    let badgeClass = 'bg-slate-100 text-slate-800';
-                    if (ev.tipo === 'Inversione') badgeClass = 'bg-purple-100 text-purple-800';
-                    else if (ev.tipo === 'Installazione' || ev.tipo === 'Montaggio Nuovo Set') badgeClass = 'bg-blue-100 text-blue-800';
-                    else if (ev.tipo === 'Cambio Stagionale') badgeClass = 'bg-amber-100 text-amber-800';
+                    let badgeClass = 'bg-slate-800 text-slate-300 border border-slate-700';
+                    if (ev.tipo === 'Inversione') badgeClass = 'bg-purple-950 text-purple-300 border border-purple-800';
+                    else if (ev.tipo === 'Installazione' || ev.tipo === 'Montaggio Nuovo Set') badgeClass = 'bg-blue-950 text-blue-300 border border-blue-800';
+                    else if (ev.tipo === 'Cambio Stagionale') badgeClass = 'bg-amber-950 text-amber-300 border border-amber-800';
 
                     const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition";
+                    tr.className = "hover:bg-slate-800/50 transition";
                     tr.innerHTML = `
-                        <td class="py-3 px-2 text-slate-600">${ev.data}</td>
-                        <td class="py-3 px-2 font-medium text-slate-900">${nomeSet}</td>
+                        <td class="py-3 px-2 text-slate-300">${ev.data}</td>
+                        <td class="py-3 px-2 font-medium text-slate-100">${nomeSet}</td>
                         <td class="py-3 px-2"><span class="px-2.5 py-1 rounded-md text-xs font-medium ${badgeClass}">${ev.tipo}</span></td>
-                        <td class="py-3 px-2 text-slate-700">${ev.kmAuto} km</td>
+                        <td class="py-3 px-2 text-slate-300">${ev.kmAuto} km</td>
                         <td class="py-3 px-2 text-right">
-                            <button onclick="eliminaEvento('${ev.id}')" class="text-xs text-red-500 hover:text-red-700 font-medium">Elimina</button>
+                            <button onclick="eliminaEvento('${ev.id}')" class="text-xs text-red-400 hover:text-red-300 font-medium">Elimina</button>
                         </td>
                     `;
                     tabella.appendChild(tr);
@@ -530,7 +530,6 @@
                 try {
                     const datiImportati = JSON.parse(e.target.result);
                     if (datiImportati && datiImportati.sets && datiImportati.eventi) {
-                        // Svuota e ricarica su Supabase
                         await supabaseClient.from('pneumatici_eventi').delete().neq('id', '');
                         await supabaseClient.from('pneumatici_sets').delete().neq('id', '');
 
@@ -571,7 +570,6 @@
             document.body.removeChild(link);
         }
 
-        // Avvio: carica i dati al caricamento della pagina
         caricaDatiDaSupabase();
     </script>
 </body>
