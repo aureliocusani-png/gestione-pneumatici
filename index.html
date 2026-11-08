@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Pneumatici & Chilometraggio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 sm:p-6">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+    
+        <!-- Header -->
+        <header class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Gestione Pneumatici</h1>
+                <p class="text-sm text-slate-500">Traccia km, inversioni, cambi stagionali e stato dei set (Online su Supabase).</p>
+            </div>
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                <button onclick="esportaBackup()" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3.5 py-2 rounded-xl transition shadow-sm">
+                    Esporta Backup JSON
+                </button>
+                <label class="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-3.5 py-2 rounded-xl transition shadow-sm cursor-pointer text-center">
+                    Importa Backup
+                    <input type="file" id="file-backup" accept=".json" onchange="importaBackup(event)" class="hidden">
+                </label>
+                <button onclick="esportaCSV()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-3.5 py-2 rounded-xl transition shadow-sm">
+                    Esporta CSV (Storico)
+                </button>
+            </div>
+        </header>
+
+        <!-- Sezione 1: Aggiungi Manualmente Nuovo Set -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">1. Aggiungi Nuovo Set di Pneumatici</h2>
+            <form id="form-set" onsubmit="aggiungiSetManuale(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nome Set (es. Estivi 2026)</label>
+                    <input type="text" id="set-nome" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Km Iniziali auto (Installazione)</label>
+                    <input type="number" id="set-km-inz" required min="0" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-xl transition shadow-sm">
+                        Crea Set
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Sezione 2: Registra Evento -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">2. Registra Evento</h2>
+            <form id="form-evento" onsubmit="registraEvento(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Tipo Evento</label>
+                    <select id="ev-tipo" onchange="gestisciCambioTipoEvento()" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="Aggiornamento Km">Aggiornamento Km</option>
+                        <option value="Inversione">Inversione Pneumatici</option>
+                        <option value="Cambio Stagionale">Cambio Set Stagionale</option>
+                        <option value="Montaggio Nuovo Set">Montaggio Nuovo Set</option>
+                    </select>
+                </div>
+                
+                <div id="container-set-esistente">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Seleziona Set</label>
+                    <select id="ev-set" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></select>
+                </div>
+
+                <div id="container-nuovo-set" class="hidden">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nome Nuovo Set</label>
+                    <input type="text" id="ev-nuovo-set-nome" placeholder="es. Invernali Nuovi" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Data</label>
+                    <input type="date" id="ev-data" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Km Totali Auto (Cruscotto)</label>
+                    <input type="number" id="ev-km" required min="0" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-2 px-4 rounded-xl transition shadow-sm">
+                        Registra
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Sezione 3: Elenco Set -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-slate-900">3. I tuoi Set di Pneumatici</h2>
+            <div id="lista-set" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- Sezione 4: Cronologia Eventi Completa -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">4. Storico Eventi (Ordinati dal meno recente)</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-500 font-medium">
+                            <th class="pb-3 px-2">Data</th>
+                            <th class="pb-3 px-2">Set Pneumatici</th>
+                            <th class="pb-3 px-2">Tipo Evento</th>
+                            <th class="pb-3 px-2">Km Auto</th>
+                            <th class="pb-3 px-2 text-right">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabella-eventi" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Script di Integrazione Supabase & Logica -->
+    <script>
+        // CONFIGURAZIONE SUPABASE
+        const SUPABASE_URL = 'https://nebqpkhtxvlohndikphy.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_detmCARHKTmfs970XSle-Q_D8VSS8mK';
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let datiApp = { sets: [], eventi: [] };
+
+        document.getElementById('ev-data').valueAsDate = new Date();
+
+        // Caricamento dati da Supabase all'avvio
+        async function caricaDatiDaSupabase() {
+            try {
+                const { data: sets, error: errSets } = await supabaseClient.from('pneumatici_sets').select('*');
+                const { data: eventi, error: errEv } = await supabaseClient.from('pneumatici_eventi').select('*');
+
+                if (errSets || errEv) throw errSets || errEv;
+
+                datiApp.sets = sets.map(s => ({ id: s.id, nome: s.nome, kmInz: s.km_inz, stato: s.stato }));
+                datiApp.eventi = eventi.map(e => ({ id: e.id, setId: e.set_id, tipo: e.tipo, data: e.data, kmAuto: e.km_auto }));
+
+                aggiornaInterfaccia();
+            } catch (err) {
+                console.error("Errore di caricamento da Supabase:", err);
+                alert("Impossibile connettersi a Supabase. Controlla la console o le credenziali.");
+            }
+        }
+
+        function gestisciCambioTipoEvento() {
+            const tipo = document.getElementById('ev-tipo').value;
+            const containerEsistente = document.getElementById('container-set-esistente');
+            const containerNuovo = document.getElementById('container-nuovo-set');
+            const inputNuovoSet = document.getElementById('ev-nuovo-set-nome');
+            const selectSet = document.getElementById('ev-set');
+
+            if (tipo === 'Montaggio Nuovo Set') {
+                containerEsistente.classList.add('hidden');
+                containerNuovo.classList.remove('hidden');
+                inputNuovoSet.required = true;
+                selectSet.required = false;
+            } else {
+                containerEsistente.classList.remove('hidden');
+                containerNuovo.classList.add('hidden');
+                inputNuovoSet.required = false;
+                selectSet.required = true;
+            }
+        }
+
+        async function aggiungiSetManuale(e) {
+            e.preventDefault();
+            const nome = document.getElementById('set-nome').value.trim();
+            const kmInz = parseInt(document.getElementById('set-km-inz').value);
+            const nuovoId = 'set_' + Date.now();
+            const eventoId = 'ev_' + Date.now();
+            const dataOggi = new Date().toISOString().split('T')[0];
+
+            const nuovoSet = { id: nuovoId, nome: nome, km_inz: kmInz, stato: 'A deposito' };
+            const nuovoEvento = { id: eventoId, set_id: nuovoId, tipo: 'Installazione', data: dataOggi, km_auto: kmInz };
+
+            const { error: err1 } = await supabaseClient.from('pneumatici_sets').insert([nuovoSet]);
+            const { error: err2 } = await supabaseClient.from('pneumatici_eventi').insert([nuovoEvento]);
+
+            if (err1 || err2) {
+                alert("Errore durante il salvataggio su Supabase.");
+                return;
+            }
+
+            document.getElementById('form-set').reset();
+            caricaDatiDaSupabase();
+        }
+
+        async function modificaNomeSet(setId) {
+            const set = datiApp.sets.find(s => s.id === setId);
+            if (!set) return;
+
+            const nuovoNome = prompt("Inserisci il nuovo nome per il set di pneumatici:", set.nome);
+            if (nuovoNome !== null && nuovoNome.trim() !== "") {
+                const { error } = await supabaseClient.from('pneumatici_sets').update({ nome: nuovoNome.trim() }).eq('id', setId);
+                if (error) alert("Errore durante l'aggiornamento.");
+                else caricaDatiDaSupabase();
+            }
+        }
+
+        function calcolaDifferenzaKm(setId, ultimoKmRegistrato, inputElemId, risultatoElemId) {
+            const inputVal = parseInt(document.getElementById(inputElemId).value);
+            const resElem = document.getElementById(risultatoElemId);
+
+            if (isNaN(inputVal)) {
+                resElem.textContent = "";
+                return;
+            }
+
+            const diff = inputVal - ultimoKmRegistrato;
+            if (diff >= 0) {
+                resElem.textContent = `+${diff} km rispetto all'ultimo evento`;
+                resElem.className = "text-xs font-medium text-emerald-600 mt-1";
+            } else {
+                resElem.textContent = `${diff} km (valore inferiore all'ultimo evento)`;
+                resElem.className = "text-xs font-medium text-amber-600 mt-1";
+            }
+        }
+
+        async function registraEvento(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('ev-tipo').value;
+            const data = document.getElementById('ev-data').value;
+            const kmAuto = parseInt(document.getElementById('ev-km').value);
+            let setId = '';
+
+            const setAttivoPrecedente = datiApp.sets.find(s => s.stato === 'Attivo');
+
+            if (tipo === 'Montaggio Nuovo Set') {
+                const nomeNuovo = document.getElementById('ev-nuovo-set-nome').value.trim();
+                if (!nomeNuovo) {
+                    alert("Inserisci il nome del nuovo set!");
+                    return;
+                }
+
+                if (setAttivoPrecedente) {
+                    setAttivoPrecedente.stato = 'A deposito';
+                    await supabaseClient.from('pneumatici_sets').update({ stato: 'A deposito' }).eq('id', setAttivoPrecedente.id);
+                    await supabaseClient.from('pneumatici_eventi').insert([{
+                        id: 'ev_dep_' + Date.now(),
+                        set_id: setAttivoPrecedente.id,
+                        tipo: 'Aggiornamento Km',
+                        data: data,
+                        km_auto: kmAuto
+                    }]);
+                }
+
+                setId = 'set_' + Date.now();
+                await supabaseClient.from('pneumatici_sets').insert([{ id: setId, nome: nomeNuovo, km_inz: kmAuto, stato: 'Attivo' }]);
+                await supabaseClient.from('pneumatici_eventi').insert([{
+                    id: 'ev_inst_' + Date.now(),
+                    set_id: setId,
+                    tipo: 'Installazione',
+                    data: data,
+                    km_auto: kmAuto
+                }]);
+            } else {
+                setId = document.getElementById('ev-set').value;
+                if (!setId) {
+                    alert("Seleziona prima un set di pneumatici!");
+                    return;
+                }
+
+                if (tipo === 'Cambio Stagionale' || tipo === 'Installazione') {
+                    if (setAttivoPrecedente && setAttivoPrecedente.id !== setId) {
+                        setAttivoPrecedente.stato = 'A deposito';
+                        await supabaseClient.from('pneumatici_sets').update({ stato: 'A deposito' }).eq('id', setAttivoPrecedente.id);
+                        await supabaseClient.from('pneumatici_eventi').insert([{
+                            id: 'ev_dep_' + Date.now(),
+                            set_id: setAttivoPrecedente.id,
+                            tipo: 'Aggiornamento Km',
+                            data: data,
+                            km_auto: kmAuto
+                        }]);
+                    }
+
+                    await supabaseClient.from('pneumatici_sets').update({ stato: 'Attivo' }).eq('id', setId);
+                }
+            }
+
+            await supabaseClient.from('pneumatici_eventi').insert([{
+                id: 'ev_' + Date.now(),
+                set_id: setId,
+                tipo: tipo,
+                data: data,
+                km_auto: kmAuto
+            }]);
+
+            document.getElementById('form-evento').reset();
+            document.getElementById('ev-data').valueAsDate = new Date();
+            gestisciCambioTipoEvento();
+            caricaDatiDaSupabase();
+        }
+
+        async function cambiaStatoSet(setId, nuovoStato) {
+            if (nuovoStato === 'Attivo') {
+                const attivoCorrente = datiApp.sets.find(s => s.stato === 'Attivo');
+                if (attivoCorrente) {
+                    await supabaseClient.from('pneumatici_sets').update({ stato: 'A deposito' }).eq('id', attivoCorrente.id);
+                }
+            }
+            const { error } = await supabaseClient.from('pneumatici_sets').update({ stato: nuovoStato }).eq('id', setId);
+            if (error) alert("Errore durante il cambio di stato.");
+            else caricaDatiDaSupabase();
+        }
+
+        async function eliminaEvento(eventId) {
+            if (confirm("Vuoi davvero eliminare questo evento?")) {
+                const { error } = await supabaseClient.from('pneumatici_eventi').delete().eq('id', eventId);
+                if (error) alert("Errore durante l'eliminazione.");
+                else caricaDatiDaSupabase();
+            }
+        }
+
+        async function eliminaSet(setId) {
+            if (confirm("Vuoi davvero eliminare questo set e tutti gli eventi collegati?")) {
+                await supabaseClient.from('pneumatici_eventi').delete().eq('set_id', setId);
+                const { error } = await supabaseClient.from('pneumatici_sets').delete().eq('id', setId);
+                if (error) alert("Errore durante l'eliminazione del set.");
+                else caricaDatiDaSupabase();
+            }
+        }
+
+        function aggiornaInterfaccia() {
+            const selectSet = document.getElementById('ev-set');
+            selectSet.innerHTML = '';
+            
+            if (datiApp.sets.length === 0) {
+                selectSet.innerHTML = '<option value="">Nessun set disponibile</option>';
+            } else {
+                datiApp.sets.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = `${s.nome} [${s.stato}]`;
+                    selectSet.appendChild(opt);
+                });
+            }
+
+            const eventiGlobali = [...datiApp.eventi].sort((a, b) => new Date(a.data) - new Date(b.data) || a.kmAuto - b.kmAuto);
+            
+            let kmTotaliPerSet = {};
+            let kmDaUltimoRotazionePerSet = {};
+            let conteggioRotazioniPerSet = {};
+            let sommaIntervalliRotazioniPerSet = {};
+            let ultimoKmMontaggioPerSet = {};
+            let ultimoKmEventoPerSet = {};
+
+            let ultimoKmGlobale = null;
+            let setAttivoCorrente = null;
+
+            datiApp.sets.forEach(s => {
+                kmTotaliPerSet[s.id] = 0;
+                kmDaUltimoRotazionePerSet[s.id] = 0;
+                conteggioRotazioniPerSet[s.id] = 0;
+                sommaIntervalliRotazioniPerSet[s.id] = 0;
+                ultimoKmMontaggioPerSet[s.id] = s.kmInz;
+                ultimoKmEventoPerSet[s.id] = s.kmInz;
+            });
+
+            eventiGlobali.forEach(ev => {
+                const setId = ev.setId;
+                const km = ev.kmAuto;
+
+                if (setId) {
+                    ultimoKmEventoPerSet[setId] = km;
+                }
+
+                if (ev.tipo === 'Installazione' || ev.tipo === 'Montaggio Nuovo Set' || ev.tipo === 'Cambio Stagionale') {
+                    if (ev.tipo === 'Cambio Stagionale' && setId) {
+                        const kmTratti = kmDaUltimoRotazionePerSet[setId] || 0;
+                        if (kmTratti > 0) {
+                            conteggioRotazioniPerSet[setId] = (conteggioRotazioniPerSet[setId] || 0) + 1;
+                            sommaIntervalliRotazioniPerSet[setId] = (sommaIntervalliRotazioniPerSet[setId] || 0) + kmTratti;
+                        }
+                        kmDaUltimoRotazionePerSet[setId] = 0;
+                    }
+
+                    setAttivoCorrente = setId;
+                    ultimoKmGlobale = km;
+                    if (setId) {
+                        ultimoKmMontaggioPerSet[setId] = km;
+                    }
+                } else if (ev.tipo === 'Aggiornamento Km' || ev.tipo === 'Inversione') {
+                    if (setAttivoCorrente && ultimoKmGlobale !== null && km > ultimoKmGlobale) {
+                        const delta = km - ultimoKmGlobale;
+                        kmTotaliPerSet[setId] = (kmTotaliPerSet[setId] || 0) + delta;
+                        kmDaUltimoRotazionePerSet[setId] = (kmDaUltimoRotazionePerSet[setId] || 0) + delta;
+                    }
+                    if (setId) setAttivoCorrente = setId;
+                    ultimoKmGlobale = km;
+                    
+                    if (ev.tipo === 'Inversione') {
+                        const kmDaUltima = kmDaUltimoRotazionePerSet[setId] || 0;
+                        if (kmDaUltima > 0) {
+                            conteggioRotazioniPerSet[setId] = (conteggioRotazioniPerSet[setId] || 0) + 1;
+                            sommaIntervalliRotazioniPerSet[setId] = (sommaIntervalliRotazioniPerSet[setId] || 0) + kmDaUltima;
+                        }
+                        kmDaUltimoRotazionePerSet[setId] = 0;
+                    }
+                }
+            });
+
+            const containerSet = document.getElementById('lista-set');
+            containerSet.innerHTML = '';
+            
+            if (datiApp.sets.length === 0) {
+                containerSet.innerHTML = '<p class="text-sm text-slate-500 col-span-2">Nessun set di pneumatici inserito.</p>';
+            } else {
+                datiApp.sets.forEach(s => {
+                    const kmTotaliSet = kmTotaliPerSet[s.id] || 0;
+                    const kmUltimoMontaggio = ultimoKmMontaggioPerSet[s.id] !== undefined ? ultimoKmMontaggioPerSet[s.id] : s.kmInz;
+                    const ultimoKmRegistrato = ultimoKmEventoPerSet[s.id] !== undefined ? ultimoKmEventoPerSet[s.id] : s.kmInz;
+                    
+                    const numRotazioni = conteggioRotazioniPerSet[s.id] || 0;
+                    const sommaIntervalli = sommaIntervalliRotazioniPerSet[s.id] || 0;
+                    let mediaRotazioniStr = "Nessuna inversione/cambio registrato";
+                    if (numRotazioni > 0) {
+                        const media = Math.round(sommaIntervalli / numRotazioni);
+                        mediaRotazioniStr = `${media} km (su ${numRotazioni} eventi)`;
+                    }
+
+                    let badgeClass = 'bg-slate-100 text-slate-800';
+                    let cardBorder = 'border-slate-200 bg-white';
+                    if (s.stato === 'Attivo') {
+                        badgeClass = 'bg-emerald-100 text-emerald-800 font-semibold';
+                        cardBorder = 'border-emerald-300 bg-emerald-50/20 shadow-sm';
+                    } else if (s.stato === 'A deposito') {
+                        badgeClass = 'bg-blue-100 text-blue-800';
+                    } else if (s.stato === 'Esauriti') {
+                        badgeClass = 'bg-amber-100 text-amber-800';
+                        cardBorder = 'border-slate-300 bg-slate-100 opacity-75';
+                    }
+
+                    const inputId = `diff_input_${s.id}`;
+                    const resId = `diff_res_${s.id}`;
+
+                    const div = document.createElement('div');
+                    div.className = `p-5 rounded-2xl border ${cardBorder} flex flex-col justify-between`;
+                    div.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="font-bold text-slate-900 text-base">${s.nome}</h3>
+                                <span class="text-xs px-2.5 py-1 rounded-full ${badgeClass}">${s.stato}</span>
+                            </div>
+                            <div class="mt-4 space-y-1.5 text-sm text-slate-600">
+                                <p><span class="font-medium text-slate-700">Km totali percorsi:</span> <span class="font-bold text-slate-900">${kmTotaliSet} km</span></p>
+                                <p><span class="font-medium text-slate-700">Km cruscotto al montaggio:</span> <span class="font-semibold text-slate-900">${kmUltimoMontaggio} km</span></p>
+                                <p><span class="font-medium text-slate-700">Media km tra inversioni/cambio stagionale:</span> <span class="font-semibold text-slate-900">${mediaRotazioniStr}</span></p>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-slate-100 bg-slate-50/70 p-3 rounded-xl">
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Calcola differenza da km attuali:</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="${inputId}" placeholder="es. km attuali" oninput="calcolaDifferenzaKm('${s.id}', ${ultimoKmRegistrato}, '${inputId}', '${resId}')" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                </div>
+                                <div id="${resId}"></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap justify-between items-center gap-2">
+                            <div class="flex flex-wrap gap-2 text-xs">
+                                <button onclick="modificaNomeSet('${s.id}')" class="text-indigo-600 hover:text-indigo-800 font-medium">Modifica Nome</button>
+                                ${s.stato !== 'Attivo' ? `<button onclick="cambiaStatoSet('${s.id}', 'Attivo')" class="text-emerald-600 hover:text-emerald-800 font-medium">Monta</button>` : ''}
+                                ${s.stato !== 'A deposito' && s.stato !== 'Esauriti' ? `<button onclick="cambiaStatoSet('${s.id}', 'A deposito')" class="text-blue-600 hover:text-blue-800 font-medium">Deposito</button>` : ''}
+                                ${s.stato !== 'Esauriti' ? `<button onclick="cambiaStatoSet('${s.id}', 'Esauriti')" class="text-amber-600 hover:text-amber-800 font-medium">Esauriti</button>` : `<button onclick="cambiaStatoSet('${s.id}', 'A deposito')" class="text-indigo-600 hover:text-indigo-800 font-medium">Riattiva</button>`}
+                            </div>
+                            <button onclick="eliminaSet('${s.id}')" class="text-xs text-red-500 hover:text-red-700 font-medium">Elimina</button>
+                        </div>
+                    `;
+                    containerSet.appendChild(div);
+                });
+            }
+
+            const tabella = document.getElementById('tabella-eventi');
+            tabella.innerHTML = '';
+
+            const eventiOrdinati = [...datiApp.eventi].sort((a, b) => new Date(a.data) - new Date(b.data) || a.kmAuto - b.kmAuto);
+
+            if (eventiOrdinati.length === 0) {
+                tabella.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">Nessun evento registrato.</td></tr>';
+            } else {
+                eventiOrdinati.forEach(ev => {
+                    const setObj = datiApp.sets.find(s => s.id === ev.setId);
+                    const nomeSet = setObj ? setObj.nome : 'Set rimosso';
+                    
+                    let badgeClass = 'bg-slate-100 text-slate-800';
+                    if (ev.tipo === 'Inversione') badgeClass = 'bg-purple-100 text-purple-800';
+                    else if (ev.tipo === 'Installazione' || ev.tipo === 'Montaggio Nuovo Set') badgeClass = 'bg-blue-100 text-blue-800';
+                    else if (ev.tipo === 'Cambio Stagionale') badgeClass = 'bg-amber-100 text-amber-800';
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition";
+                    tr.innerHTML = `
+                        <td class="py-3 px-2 text-slate-600">${ev.data}</td>
+                        <td class="py-3 px-2 font-medium text-slate-900">${nomeSet}</td>
+                        <td class="py-3 px-2"><span class="px-2.5 py-1 rounded-md text-xs font-medium ${badgeClass}">${ev.tipo}</span></td>
+                        <td class="py-3 px-2 text-slate-700">${ev.kmAuto} km</td>
+                        <td class="py-3 px-2 text-right">
+                            <button onclick="eliminaEvento('${ev.id}')" class="text-xs text-red-500 hover:text-red-700 font-medium">Elimina</button>
+                        </td>
+                    `;
+                    tabella.appendChild(tr);
+                });
+            }
+        }
+
+        function esportaBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datiApp, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "backup_pneumatici.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        async function importaBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const datiImportati = JSON.parse(e.target.result);
+                    if (datiImportati && datiImportati.sets && datiImportati.eventi) {
+                        // Svuota e ricarica su Supabase
+                        await supabaseClient.from('pneumatici_eventi').delete().neq('id', '');
+                        await supabaseClient.from('pneumatici_sets').delete().neq('id', '');
+
+                        const setsToInsert = datiImportati.sets.map(s => ({ id: s.id, nome: s.nome, km_inz: s.kmInz, stato: s.stato }));
+                        const evsToInsert = datiImportati.eventi.map(ev => ({ id: ev.id, set_id: ev.setId, tipo: ev.tipo, data: ev.data, km_auto: ev.kmAuto }));
+
+                        await supabaseClient.from('pneumatici_sets').insert(setsToInsert);
+                        await supabaseClient.from('pneumatici_eventi').insert(evsToInsert);
+
+                        caricaDatiDaSupabase();
+                        alert("Backup importato e sincronizzato su Supabase con successo!");
+                    } else {
+                        alert("Il file selezionato non è un formato valido.");
+                    }
+                } catch(err) {
+                    alert("Errore durante la lettura del file JSON.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function esportaCSV() {
+            const eventiOrdinati = [...datiApp.eventi].sort((a, b) => new Date(a.data) - new Date(b.data));
+            let csvContent = "data:text/csv;charset=utf-8,Data,Set,Tipo Evento,Km Auto\r\n";
+            
+            eventiOrdinati.forEach(ev => {
+                const setObj = datiApp.sets.find(s => s.id === ev.setId);
+                const nomeSet = setObj ? setObj.nome : 'Set rimosso';
+                csvContent += `"${ev.data}","${nomeSet}","${ev.tipo}",${ev.kmAuto}\r\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "storico_pneumatici.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Avvio: carica i dati al caricamento della pagina
+        caricaDatiDaSupabase();
+    </script>
+</body>
+</html>
